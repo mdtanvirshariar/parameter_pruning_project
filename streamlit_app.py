@@ -533,29 +533,37 @@ st.markdown("""
         border-bottom: 2px solid #4CAF50;
     }
     
-    /* Status Tag Styling */
+    /* Status Tag Styling - Enhanced Visibility */
     .status-tag {
         display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        font-weight: 600;
+        padding: 0.4rem 0.9rem !important;
+        border-radius: 12px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
         margin-left: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        min-width: 80px;
+        text-align: center;
     }
     
     .status-tag-pruned {
-        background: #FF9800;
-        color: white;
+        background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%) !important;
+        color: white !important;
+        border: 1px solid #E65100;
     }
     
     .status-tag-baseline {
-        background: #2196F3;
-        color: white;
+        background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
+        color: white !important;
+        border: 1px solid #1565C0;
     }
     
     .status-tag-ready {
-        background: #4CAF50;
-        color: white;
+        background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+        color: white !important;
+        border: 1px solid #388E3C;
     }
     
     /* Download Icon Styling */
@@ -1039,8 +1047,10 @@ def get_model_info(model_path):
         
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         state = torch.load(model_path, map_location=device)
+        state = fix_state_dict(state)  # Fix _orig_mod prefix if present
+        
         model = SimpleCNN().to(device)
-        model.load_state_dict(state)
+        model.load_state_dict(state, strict=False)  # Use strict=False to handle minor mismatches
         
         # Count parameters
         total_params = sum(p.numel() for p in model.parameters())
@@ -1078,7 +1088,8 @@ def evaluate_model(model_path, use_cache=True):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         model = SimpleCNN().to(device)
         state = torch.load(model_path, map_location=device)
-        model.load_state_dict(state)
+        state = fix_state_dict(state)  # Fix _orig_mod prefix if present
+        model.load_state_dict(state, strict=False)
         model.eval()
         
         testloader = get_test_loader()
@@ -1120,6 +1131,20 @@ def get_model_files():
     if saved_dir.exists():
         return sorted([str(f) for f in saved_dir.glob("*.pth")], key=os.path.getmtime, reverse=True)
     return []
+
+# Helper function to fix state_dict with _orig_mod prefix
+def fix_state_dict(state):
+    """Remove _orig_mod prefix from state_dict keys if present"""
+    if any(key.startswith('_orig_mod.') for key in state.keys()):
+        new_state = {}
+        for key, value in state.items():
+            if key.startswith('_orig_mod.'):
+                new_key = key.replace('_orig_mod.', '')
+                new_state[new_key] = value
+            else:
+                new_state[key] = value
+        return new_state
+    return state
 
 # Model Versioning Functions
 def get_model_version(model_path):
@@ -1963,7 +1988,8 @@ with tab2:
                         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                         model = SimpleCNN().to(device)
                         state = torch.load(selected_model, map_location=device)
-                        model.load_state_dict(state)
+                        state = fix_state_dict(state)  # Fix _orig_mod prefix if present
+                        model.load_state_dict(state, strict=False)
                         
                         status.text(f"🔪 Applying {prune_method} pruning...")
                         progress.progress(40)
@@ -2320,7 +2346,8 @@ with tab4:
                     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                     model = SimpleCNN().to(device)
                     state = torch.load(selected_model, map_location=device)
-                    model.load_state_dict(state)
+                    state = fix_state_dict(state)  # Fix _orig_mod prefix if present
+                    model.load_state_dict(state, strict=False)
                     
                     if analysis_type == "📊 Architecture Analysis":
                         st.subheader("📊 Model Architecture")
@@ -2982,7 +3009,7 @@ with tab3:
                             st.warning("⚠️ No previous version found")
             
             with model_row_col3:
-                st.markdown(f'<span class="{status_class}">{status}</span>', unsafe_allow_html=True)
+                st.markdown(f'<span class="status-tag {status_class}">{status}</span>', unsafe_allow_html=True)
             
             with model_row_col4:
                 if size_reduction is not None and size_reduction > 0:
@@ -3173,7 +3200,8 @@ File Information:
                             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                             model = SimpleCNN().to(device)
                             state = torch.load(selected_model, map_location=device)
-                            model.load_state_dict(state)
+                            state = fix_state_dict(state)  # Fix _orig_mod prefix if present
+                            model.load_state_dict(state, strict=False)
                             
                             flops = calculate_flops(model)
                             model_size = get_model_size_mb(model)
