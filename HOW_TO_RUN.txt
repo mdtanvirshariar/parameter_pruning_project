@@ -1,0 +1,57 @@
+========================================
+HOW TO RUN THE APPLICATION
+========================================
+
+PROBLEM: You're in the wrong directory!
+You're currently in: C:\Users\Rabby
+But the app is in: C:\parameter_pruning_project
+
+========================================
+SOLUTION 1: Change Directory First
+========================================
+
+1. Open Command Prompt (CMD)
+2. Type these commands:
+
+   cd C:\parameter_pruning_project
+   python -m streamlit run streamlit_app.py
+
+========================================
+SOLUTION 2: Use the Batch File (EASIEST!)
+========================================
+
+1. Go to the project folder: C:\parameter_pruning_project
+2. Double-click: START_APP.bat
+   OR
+   Double-click: run_app.bat
+
+That's it! The app will start automatically.
+
+========================================
+SOLUTION 3: Quick Command (One Line)
+========================================
+
+Open CMD and type:
+
+cd C:\parameter_pruning_project && python -m streamlit run streamlit_app.py
+
+========================================
+VERIFICATION
+========================================
+
+After running, you should see:
+- Terminal shows: "You can now view your Streamlit app"
+- Browser opens automatically
+- URL: http://localhost:8501
+
+========================================
+NEED HELP?
+========================================
+
+If still not working, check:
+1. Are you in the correct folder? (C:\parameter_pruning_project)
+2. Is Python installed? (python --version)
+3. Are dependencies installed? (python -c "import streamlit")
+
+========================================
+
